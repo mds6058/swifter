@@ -67,7 +67,12 @@ public class HttpParser {
     
     private func readBody(_ socket: Socket, size: Int) throws -> [UInt8] {
         var body = [UInt8]()
-        for _ in 0..<size { body.append(try socket.read()) }
+        var length = size
+        while length > 0 {
+            let buffer = try socket.read(length: length)
+            body.append(contentsOf: buffer)
+            length -= buffer.count
+        }
         return body
     }
     

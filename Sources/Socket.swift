@@ -125,6 +125,19 @@ open class Socket: Hashable, Equatable {
         return buffer[0]
     }
     
+    open func read(length: Int) throws -> [UInt8] {
+        var buffer = [UInt8](repeating: 0, count: length)
+        #if os(Linux)
+        let next = recv(self.socketFileDescriptor as Int32, &buffer, Int(buffer.count), Int32(MSG_NOSIGNAL))
+        #else
+        let next = recv(self.socketFileDescriptor as Int32, &buffer, Int(buffer.count), 0)
+        #endif
+        if next <= 0 {
+            throw SocketError.recvFailed(Errno.description())
+        }
+        return Array(buffer.prefix(next))
+    }
+    
     private static let CR = UInt8(13)
     private static let NL = UInt8(10)
     
